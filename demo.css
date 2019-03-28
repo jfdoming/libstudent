@@ -1,0 +1,243 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-size: 16px;
+	margin: 0.5em;
+	font-family: Roboto, sans-serif;
+}
+input, #courseSelector {
+	padding: 5px;
+	border: none;
+	border-radius: 5px;
+	font-size: 13px;
+}
+input[type="button"], #courseSelector, .x {
+	border: 1px solid #6C7AE0;
+	font-weight: bold;
+	padding: 10px;
+	
+	transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+input[type="button"]:hover, #courseSelector:hover, #courseSelector.focus, .x:hover {
+	border: 1px solid #818CE4;
+}
+input[type="text"] {
+	width: 10ch;
+	padding: 5px;
+	border: 1px solid #CCC;
+	border-radius: 5px;
+	transition: border-color 0.2s ease;
+	font-family: Roboto, sans-serif;
+}
+input:focus, .x:focus, #courseSelector:focus, #courseSelector.focus {
+	outline: none;
+}
+input[type="text"]:focus {
+	outline: none;
+	border-color: #999;
+}
+table {
+	border-collapse: collapse;
+}
+thead {
+	background: #6C7AE0;
+	color: white;
+	line-height: 1.4;
+}
+th, td {
+	text-align: left;
+	border-bottom: 1px solid #CCC;
+	padding: 15px;
+	padding-right: 0px;
+}
+th:first-child, td:first-child {
+	padding-left: 30px;
+}
+th:last-child, td:last-child {
+	padding-right: 30px;
+	text-align: center;
+}
+tr:last-child > th, tr:last-child > td {
+	border: none;
+}
+tbody tr {
+	background: white;
+	transition: background 0.3s ease;
+}
+tbody tr:hover {
+	background: #F7F7F7;
+}
+tr {
+	cursor: move;
+}
+tr:first-child {
+	cursor: auto;
+}
+
+#container {
+	display: inline-block;
+}
+#courseSelectorContainer {
+	border-radius: 10px;
+	box-shadow: 0px 0px 40px 0px rgba(0, 0, 0, 0.15);
+	padding: 20px;
+	margin-bottom: 0.5em;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+#courseSelectorLabel {
+	margin: 0;
+	padding: 0;
+	display: inline-block;
+}
+#courseSelector {
+	font-weight: unset;
+	position: relative;
+}
+
+#courseAdd {
+	width: 15ch;
+}
+#courseSelectorItems {
+	position: absolute;
+	top: calc(20px + 1.5em);
+	left: 0px;
+	width: 100%;
+	z-index: 1000;
+	box-shadow: 0px 10px 20px 0px rgba(0, 0, 0, 0.30);
+	transform-origin: 50% 0%;
+	transform: scale(0);
+	
+	transition: transform 0.3s ease;
+}
+#courseSelector.focus > #courseSelectorItems {
+	transform-origin: 0% 0%;
+	transform: scale(1);
+}
+#courseSelectorItems > * {
+	background: #6C7AE0;
+	padding: 10px;
+	
+	transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+#courseSelectorItems > *:hover {
+	background: #818CE4;
+}
+#table-container {
+	border-radius: 10px;
+	overflow: hidden;
+	box-shadow: 0px 0px 40px 0px rgba(0, 0, 0, 0.15);
+}
+#courseAddButton, #courseAdd, #courseDeleteButton {
+	margin-left: 1em;
+}
+#separator {
+	color: #999;
+	margin-left: 2em;
+	margin-right: 1em;
+}
+#body-wrapper {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+#body-wrapper > :not(:last-child) {
+	margin-right: 0.5em;
+}
+#analytics {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+#analytics > :not(:last-child) {
+	margin-bottom: 0.5em;
+}
+#markOutput {
+	width: 100%;
+}
+#calcOutput {
+	max-width: 100ch;
+}
+#calcOutput, #desiredGrade {
+	border-radius: 10px;
+	box-shadow: 0px 0px 40px 0px rgba(0, 0, 0, 0.15);
+	padding: 20px;
+	flex: 1 1;
+}
+#desiredGrade {
+	overflow: hidden;
+}
+
+.x, input[type="button"], #courseSelector {
+	background: #6C7AE0;
+	display: inline-block;
+	cursor: pointer;
+	user-select: none;
+	box-shadow: 0px 0px 40px 0px rgba(0, 0, 0, 0.15);
+	color: white;
+}
+.x {
+	padding: 1em;
+	border-radius: 50%;
+	position: relative;
+	line-height: 1;
+	
+	transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.x::after {
+	content: "x";
+	position: absolute;
+	top: 0.5em;
+	left: 0.75em;
+}
+.x:hover, .x:focus, input[type="button"]:hover, input[type="button"]:focus, #courseSelector:hover, #courseSelector.focus, #courseSelector:focus {
+	box-shadow: 5px 5px 40px 0px rgba(0, 0, 0, 0.3);
+	background: #818CE4;
+}
+input:disabled, #courseSelector.disabled {
+	background: #999;
+	border: 1px solid #999;
+	box-shadow: none;
+	cursor: default;
+	color: white;
+}
+input:disabled:hover, #courseSelector.disabled {
+	background: #999;
+	border: 1px solid #999;
+	box-shadow: none;
+}
+
+@media only screen and (max-width: 1150px) {
+	#body-wrapper {
+		flex-direction: column-reverse;
+		align-content: flex-start;
+	}
+	#body-wrapper > * {
+		margin-right: 0;
+		margin-bottom: 0.5em;
+	}
+	#body-wrapper > #table-container {
+		margin-right: 0;
+		margin-bottom: 0;
+	}
+}
+
+@media only screen and (max-width: 770px) {
+	#courseSelectorContainer {
+		flex-direction: column;
+	}
+	#courseSelectorContainer > :not(:last-child) {
+		margin-bottom: 1em;
+	}
+	#courseSelectorContainer > * {
+		margin: 0;
+		width: 100%;
+		text-align: center;
+	}
+	#courseSelector {
+		text-align: left;
+	}
+}
