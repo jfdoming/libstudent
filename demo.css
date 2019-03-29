@@ -59,7 +59,7 @@ th:last-child, td:last-child {
 	padding-right: 30px;
 	text-align: center;
 }
-tr:last-child > th, tr:last-child > td {
+tr:last-child > th, #entries > tr:last-child > td {
 	border: none;
 }
 tbody tr {
@@ -69,11 +69,8 @@ tbody tr {
 tbody tr:hover {
 	background: #F7F7F7;
 }
-tr {
+#entries > tr {
 	cursor: move;
-}
-tr:first-child {
-	cursor: auto;
 }
 
 #container {
@@ -143,6 +140,7 @@ tr:first-child {
 	display: flex;
 	flex-direction: row;
 	justify-content: flex-start;
+	align-items: flex-start;
 }
 #body-wrapper > :not(:last-child) {
 	margin-right: 0.5em;
@@ -210,10 +208,18 @@ input:disabled:hover, #courseSelector.disabled {
 	box-shadow: none;
 }
 
+tr {
+	margin: 2px;
+}
+.ghostRow {
+	visibility: hidden;
+}
+
 @media only screen and (max-width: 1150px) {
 	#body-wrapper {
 		flex-direction: column-reverse;
 		align-content: flex-start;
+		align-items: initial;
 	}
 	#body-wrapper > * {
 		margin-right: 0;

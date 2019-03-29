@@ -54,6 +54,38 @@ let uoftGPAScorer = function(marksAchieved) {
 	return 0;
 }
 
+function determineTotalMarks(record, courseId) {
+	if (!record) {
+		return 0;
+	}
+	
+	let course = record[courseId];
+	if (!course) {
+		return 0;
+	}
+	
+	let marks = course.marks;
+	if (!marks) {
+		return 0;
+	}
+	
+	let totalMarks = course.totalMarks;
+	if (!totalMarks) {
+		totalMarks = course.totalMarks = {upToDate: false, value: 0};
+	}
+	
+	if (!totalMarks.upToDate) {
+		totalMarks.value = 0;
+		for (let i = 0; i < marks.length; i++) {
+			let pair = marks[i];
+			totalMarks.value += pair.weight;
+		}
+		totalMarks.upToDate = true;
+	}
+	
+	return totalMarks;
+}
+
 /**
  * determineMarksAchieved(record, courseId) returns the marks achieved for the given course in the given academic record.
  */
@@ -105,19 +137,7 @@ function determineMarksMissed(record, courseId) {
 		return 0;
 	}
 	
-	let totalMarks = course.totalMarks;
-	if (!totalMarks) {
-		totalMarks = course.totalMarks = {upToDate: false, value: 0};
-	}
-	
-	if (!totalMarks.upToDate) {
-		totalMarks.value = 0;
-		for (let i = 0; i < marks.length; i++) {
-			let pair = marks[i];
-			totalMarks.value += pair.weight;
-		}
-		totalMarks.upToDate = true;
-	}
+	let totalMarks = determineTotalMarks(record, courseId);
 	
 	let marksMissed = course.marksMissed;
 	if (!marksMissed) {
@@ -148,21 +168,16 @@ function determineMarksEarnable(record, courseId) {
 		return 0;
 	}
 	
-	let totalMarks = course.totalMarks;
-	if (!totalMarks) {
-		totalMarks = course.totalMarks = {upToDate: false, value: 0};
-	}
-	
-	if (!totalMarks.upToDate) {
-		totalMarks.value = 0;
-		for (let i = 0; i < marks.length; i++) {
-			let pair = marks[i];
-			totalMarks.value += pair.weight;
-		}
-		totalMarks.upToDate = true;
-	}
-	
+	let totalMarks = determineTotalMarks(record, courseId);
 	return 100 - totalMarks.value;
+}
+
+function determineMeanSoFar(record, courseId) {
+	const total = determineTotalMarks(record, courseId).value;
+	if (total == 0) {
+		return 0;
+	}
+	return determineMarksAchieved(record, courseId) / total * 100;
 }
 
 function determineMarksIf100(record, courseId) {

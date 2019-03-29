@@ -8,6 +8,8 @@
 		<link rel="stylesheet" href="demo.css">
 		
 		<script src="libstudent.js" type="text/javascript"></script>
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+		
 		<script type="text/javascript">
 			function getSelectedValue() {
 				if (!selector.dataset.selectedKey && selector.dataset.selectedKey != 0) {
@@ -118,6 +120,19 @@
 				onMarksChanged(doNotSave);
 			}
 			
+			function updateDesiredGrade() {
+				const value = desiredMark.value;
+				const calculatedMark = determineMarksForTarget(record, getSelectedKey(), value);
+				if (calculatedMark <= 0) {
+					markRequired.style.display = "none";
+				} else if (calculatedMark > 100) {
+					markRequired.style.display = "none";
+				} else {
+					markRequired.style.display = "inline";
+					markRequired.textContent = calculatedMark.toFixed(3);
+				}
+			}
+			
 			function onload() {
 				let savedRecord = localStorage.getItem("primaryRecord");
 				if (savedRecord) {
@@ -139,9 +154,8 @@
 				window.calcOutput = document.getElementById("calcOutput");
 				window.markRequired = document.getElementById("markRequired");
 				window.desiredMark = document.getElementById("desiredMark");
-				desiredMark.addEventListener("valuechange", function () {
-					markRequired.textContent = determineMarksForTarget(record, getSelectedKey(), this.value).toFixed(3);
-				});
+				window.entries = document.getElementById("entries");
+				desiredMark.addEventListener("valuechange", updateDesiredGrade);
 				
 				let selectedCourseId = localStorage.getItem("selectedCourseId");
 				
@@ -176,6 +190,13 @@
 				});
 				
 				onMarksChanged(true);
+				
+				window.sortable = Sortable.create(entries, {
+					filter: ".ignoreRow",
+					preventOnFilter: true,
+					ghostClass: "ghostRow",
+					animation: 150,
+				});
 			}
 			
 			function onSelectorLabelClicked(evt) {
@@ -374,9 +395,8 @@
 					if (marks.length > 0) {
 						let length = marks.length - markOutput.dataset.oldLength;
 						while (length > 0) {
-							let row = markOutput.insertRow(2);
-							row.draggable = "true";
-							
+							let row = document.createElement("tr");
+							entries.appendChild(row);
 							let pair = marks[marks.length - length];
 							let nameCell = row.insertCell(0);
 							let markCell = row.insertCell(1);
@@ -417,23 +437,25 @@
 					let missed = determineMarksMissed(record, selectedCourseId).toFixed(3);
 					let earnable = determineMarksEarnable(record, selectedCourseId).toFixed(3);
 					let marksIf100 = determineMarksIf100(record, selectedCourseId).toFixed(3);
+					let meanSoFar = determineMeanSoFar(record, selectedCourseId).toFixed(3);
 					let target = 75;
 					let marksForTarget = determineMarksForTarget(record, selectedCourseId, target).toFixed(3);
 					
-					calcResult += `You have achieved ${achieved}/100 possible marks.\n`;
-					calcResult += `You have missed ${missed}/100 possible marks.\n`;
+					calcResult += `You have achieved ${achieved}/100 possible marks.<br/>`;
+					calcResult += `You have missed ${missed}/100 possible marks.<br/>`;
 					if (earnable == 0) {
-						calcResult += `Your final grade is ${achieved}%.\n`;
-						calcResult += `Your GPA for this course is ${determineGPAScore(record, selectedCourseId, uoftGPAScorer).toFixed(1)}.\n`;
+						calcResult += `Your final grade is ${achieved}%.<br/>`;
+						calcResult += `Your GPA for this course is ${determineGPAScore(record, selectedCourseId, uoftGPAScorer).toFixed(1)}.<br/>`;
 					} else {
-						calcResult += `You still have the opportunity to earn ${earnable}/100 marks.\n`;
-						calcResult += `If you get 100 on your remaining assessments, your final grade will be ${marksIf100}%.\n`;
-						calcResult += `If you get 0 on your remaining assessments, your final grade will be ${achieved}%.\n`;
+						calcResult += `You still have the opportunity to earn ${earnable}/100 marks.<br/>`;
+						calcResult += `Your mean mark so far is ${meanSoFar}%.<br/>`;
+						calcResult += `If you get 100 on your remaining assessments, your final grade will be ${marksIf100}%.<br/>`;
+						calcResult += `If you get 0 on your remaining assessments, your final grade will be ${achieved}%.<br/>`;
 					}
 					
-					calcOutput.textContent = calcResult;
+					calcOutput.innerHTML = calcResult;
 					
-					markRequired.textContent = determineMarksForTarget(record, getSelectedKey(), desiredMark.value).toFixed(3);
+					updateDesiredGrade();
 				} else {
 					calcOutput.textContent = "No course selected.";
 				}
@@ -476,19 +498,20 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr>
+							<tr class="ignoreRow">
 								<td><input type="text" id="name" required style="width: 20ch;"/></td>
 								<td><input type="text" id="mark" required maxlength="10" min="0" max="100" value="100" data-value="100" onkeydown="onKeydown(event, this)" oninput="onInput(event, this)"/></td>
 								<td><input type="text" id="weight" required maxlength="10" min="0" max="100" value="5" data-value="5" onkeydown="onKeydown(event, this)" oninput="onInput(event, this)"/></td>
 								<td><input type="button" id="add" value="Add mark" onclick="attemptMarkAdd()"/></td>
 							</tr>
 						</tbody>
+						<tbody id="entries"/>
 					</table>
 				</div>
 				<div id="analytics">
 					<div id="calcOutput"></div>
 					<div id="desiredGrade">
-						To get a final grade of <input type="text" id="desiredMark" style="width: 5ch" required maxlength="10" min="0" max="100" value="60" data-value="100" onkeydown="onKeydown(event, this)" oninput="onInput(event, this)"/> , you need to get <span id="markRequired">0</span>% on your remaining assessments.
+						You need to get <span id="markRequired">0</span>% on your remaining assessments in order to get a final grade of <input type="text" id="desiredMark" style="width: 5ch" required maxlength="10" min="0" max="100" value="60" data-value="100" onkeydown="onKeydown(event, this)" oninput="onInput(event, this)"/> .
 					</div>
 				</div>
 			</div>
