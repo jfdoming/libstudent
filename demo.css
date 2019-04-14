@@ -42,9 +42,11 @@ table {
 	border-collapse: collapse;
 }
 thead {
-	background: #6C7AE0;
 	color: white;
 	line-height: 1.4;
+}
+thead > tr {
+	background: #6C7AE0;
 }
 th, td {
 	text-align: left;
@@ -59,14 +61,14 @@ th:last-child, td:last-child {
 	padding-right: 30px;
 	text-align: center;
 }
-tr:last-child > th, #entries > tr:last-child > td {
+tr:last-child > th, #entries > tr:last-child > td, .no-border > tr:last-child > td {
 	border: none;
 }
-tbody tr {
+tbody > tr {
 	background: white;
 	transition: background 0.3s ease;
 }
-tbody tr:hover {
+tbody > tr:hover {
 	background: #F7F7F7;
 }
 #entries > tr {
@@ -88,11 +90,14 @@ tbody tr:hover {
 #courseSelectorLabel {
 	margin: 0;
 	padding: 0;
-	display: inline-block;
 }
 #courseSelector {
 	font-weight: unset;
 	position: relative;
+	min-width: 15ch;
+}
+#courseSelectorArrow {
+	float: right;
 }
 
 #courseAdd {
@@ -117,6 +122,7 @@ tbody tr:hover {
 #courseSelectorItems > * {
 	background: #6C7AE0;
 	padding: 10px;
+	word-break: break-word;
 	
 	transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
 }

@@ -36,7 +36,8 @@
 			}
 			
 			function setSelectorLabel(label) {
-				selectorLabel.innerHTML = label + getSelectorArrowString();
+				selectorLabel.textContent = label;
+				selectorArrow.innerHTML = getSelectorArrowString();
 				selector.dataset.selectorLabel = label;
 			}
 			
@@ -103,6 +104,23 @@
 				return false;
 			}
 			
+			function move(arr, oldIndex, newIndex) {
+				while (oldIndex < 0) {
+					oldIndex += arr.length;
+				}
+				while (newIndex < 0) {
+					newIndex += arr.length;
+				}
+				if (newIndex >= arr.length) {
+					var k = newIndex - arr.length + 1;
+					while (k--) {
+						arr.push(undefined);
+					}
+				}
+				arr.splice(newIndex, 0, arr.splice(oldIndex, 1)[0]);
+			};
+			
+			
 			function switchCourse(courseId, doNotSave) {
 				hideSelector();
 				
@@ -112,7 +130,7 @@
 				
 				setSelectedKey(courseId);
 				
-				document.querySelectorAll("#markOutput > tbody > *:not(:first-child)").forEach(function(el) {
+				document.querySelectorAll("#markOutput > tbody#entries > *").forEach(function(el) {
 					el.remove();
 				});
 				markOutput.dataset.oldLength = 0;
@@ -144,6 +162,7 @@
 				window.selectorContainer = document.getElementById("courseSelectorContainer");
 				window.selectorLabel = document.getElementById("courseSelectorLabel");
 				window.selectorItems = document.getElementById("courseSelectorItems");
+				window.selectorArrow = document.getElementById("courseSelectorArrow");
 				window.courseDelete = document.getElementById("courseDeleteButton");
 				window.courseAdd = document.getElementById("courseAdd");
 				window.markName = document.getElementById("name");
@@ -155,6 +174,7 @@
 				window.markRequired = document.getElementById("markRequired");
 				window.desiredMark = document.getElementById("desiredMark");
 				window.entries = document.getElementById("entries");
+				window.entryInput = document.querySelector("tbody.no-border");
 				desiredMark.addEventListener("valuechange", updateDesiredGrade);
 				
 				let selectedCourseId = localStorage.getItem("selectedCourseId");
@@ -196,6 +216,12 @@
 					preventOnFilter: true,
 					ghostClass: "ghostRow",
 					animation: 150,
+					onUpdate: (e) => {
+						const arr = getSelectedValue().marks;
+						// [arr[e.oldIndex], arr[e.newIndex]] = [arr[e.newIndex], arr[e.oldIndex]];
+						move(arr, e.oldIndex, e.newIndex);
+						updateSaved();
+					},
 				});
 			}
 			
@@ -393,11 +419,17 @@
 				if (course) {
 					let marks = course.marks;
 					if (marks.length > 0) {
+						entryInput.classList.remove("no-border");
+					
 						let length = marks.length - markOutput.dataset.oldLength;
-						while (length > 0) {
+						for (; length > 0; --length) {
+							let pair = marks[marks.length - length];
+							if (!pair) {
+								continue;
+							}
+							
 							let row = document.createElement("tr");
 							entries.appendChild(row);
-							let pair = marks[marks.length - length];
 							let nameCell = row.insertCell(0);
 							let markCell = row.insertCell(1);
 							let weightCell = row.insertCell(2);
@@ -426,8 +458,9 @@
 							
 							xCell.appendChild(xText);
 							markOutput.dataset.oldLength++;
-							length--;
 						}
+					} else {
+						entryInput.classList.add("no-border");
 					}
 					markOutput.dataset.oldLength = marks.length;
 					
@@ -478,7 +511,7 @@
 			<div id="courseSelectorContainer">
 				<span>Choose a course:&nbsp;</span>
 				<div id="courseSelector" onclick="onSelectorLabelClicked(event)" onkeydown="handleButtonKeydown(event, onSelectorLabelClicked)" tabindex="0">
-					<div id="courseSelectorLabel"></div>
+					<span id="courseSelectorLabel"></span><span id="courseSelectorArrow"></span>
 					<div id="courseSelectorItems"></div>
 				</div>
 				<input style="background: red;border: 1px solid red;" type="button" id="courseDeleteButton" value="Delete course" onclick="attemptCourseRemove()"/>
@@ -497,7 +530,7 @@
 								<th></th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody class="no-border">
 							<tr class="ignoreRow">
 								<td><input type="text" id="name" required style="width: 20ch;"/></td>
 								<td><input type="text" id="mark" required maxlength="10" min="0" max="100" value="100" data-value="100" onkeydown="onKeydown(event, this)" oninput="onInput(event, this)"/></td>

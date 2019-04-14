@@ -1,4 +1,4 @@
-// An academic record is a {courseId: {name, marksAchieved: {upToDate, value}, totalMarks: {upToDate, value}, marksMissed: {upToDate, value}, marks: [{name, mark, weight}]}}
+// An academic record is a {courseId: {name, marksAchieved: {upToDate, value}, totalMarks: {upToDate, value}, marksMissed: {upToDate, value}, marks: [{upToDate, name, mark, weight, components: [mark]}]}}
 
 let recip100 = 1/100;
 
@@ -54,6 +54,9 @@ let uoftGPAScorer = function(marksAchieved) {
 	return 0;
 }
 
+/**
+ * determineTotalMarks(record, courseId) returns the total possible marks for the given course in the given academic record.
+ */
 function determineTotalMarks(record, courseId) {
 	if (!record) {
 		return 0;
@@ -86,6 +89,22 @@ function determineTotalMarks(record, courseId) {
 	return totalMarks;
 }
 
+function determineMark(markObj) {
+	if (!markObj) {
+		return 0;
+	}
+	
+	
+	if (markObj.upToDate || !markObj.components) {
+		return markObj.mark;
+	}
+	
+	let total = markObj.components.reduce((part, el) => part + el, 0);
+	markObj.mark = total / Math.max(markObj.components.length, 1);
+	markObj.upToDate = true;
+	return markObj.mark;
+}
+
 /**
  * determineMarksAchieved(record, courseId) returns the marks achieved for the given course in the given academic record.
  */
@@ -116,7 +135,11 @@ function determineMarksAchieved(record, courseId) {
 	marksAchieved.value = 0;
 	for (let i = 0; i < marks.length; i++) {
 		let pair = marks[i];
-		marksAchieved.value += pair.mark * pair.weight * recip100;
+		if (!pair) {
+			continue;
+		}
+		
+		marksAchieved.value += determineMark(pair) * pair.weight * recip100;
 	}
 	marksAchieved.upToDate = true;
 	return marksAchieved.value;
@@ -212,7 +235,33 @@ function addMark(record, courseId, name, mark, weight) {
 	
 	mark = parseFloat(mark);
 	weight = parseFloat(weight);
-	marks.push({name: name ? name : "", mark: mark ? mark : 0, weight: weight ? weight : 0});
+	marks.push({upToDate: true, name: name ? name : "", mark: mark ? mark : 0, weight: weight ? weight : 0, components: []});
+	markOutOfDate(course);
+}
+
+function addMarkComponent(record, courseId, index, mark) {
+	if (!record) {
+		return;
+	}
+	
+	let course = record[courseId];
+	if (!course) {
+		return;
+	}
+	
+	let marks = course.marks;
+	if (!marks) {
+		return;
+	}
+	
+	if (index < 0 || index >= marks.length) {
+		return;
+	}
+	
+	mark = parseFloat(mark);
+	marks[index].components.push(mark);
+	
+	marks[index].upToDate = false;
 	markOutOfDate(course);
 }
 
