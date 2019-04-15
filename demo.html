@@ -142,11 +142,19 @@
 				const value = desiredMark.value;
 				const calculatedMark = determineMarksForTarget(record, getSelectedKey(), value);
 				if (calculatedMark <= 0) {
-					markRequired.style.display = "none";
+					frontText.style.display = "none";
+					otherFrontText.textContent = "Congratulations! It is not possible";
+					desiredQualifier.textContent = "as low as"
+					otherFrontText.style.display = "inline";
 				} else if (calculatedMark > 100) {
-					markRequired.style.display = "none";
+					frontText.style.display = "none";
+					otherFrontText.textContent = "Sorry, but it is not possible";
+					desiredQualifier.textContent = "as high as";
+					otherFrontText.style.display = "inline";
 				} else {
-					markRequired.style.display = "inline";
+					frontText.style.display = "inline";
+					otherFrontText.style.display = "none";
+					desiredQualifier.textContent = "of";
 					markRequired.textContent = calculatedMark.toFixed(3);
 				}
 			}
@@ -172,6 +180,9 @@
 				window.markOutput = document.getElementById("markOutput");
 				window.calcOutput = document.getElementById("calcOutput");
 				window.markRequired = document.getElementById("markRequired");
+				window.frontText = document.getElementById("frontText");
+				window.otherFrontText = document.getElementById("otherFrontText");
+				window.desiredQualifier = document.getElementById("desiredQualifier");
 				window.desiredMark = document.getElementById("desiredMark");
 				window.entries = document.getElementById("entries");
 				window.entryInput = document.querySelector("tbody.no-border");
@@ -481,7 +492,7 @@
 						calcResult += `Your GPA for this course is ${determineGPAScore(record, selectedCourseId, uoftGPAScorer).toFixed(1)}.<br/>`;
 					} else {
 						calcResult += `You still have the opportunity to earn ${earnable}/100 marks.<br/>`;
-						calcResult += `Your mean mark so far is ${meanSoFar}%.<br/>`;
+						calcResult += `If you want your mark to stay the same, you should get ${meanSoFar}% on your remaining assessments.<br/>`;
 						calcResult += `If you get 100 on your remaining assessments, your final grade will be ${marksIf100}%.<br/>`;
 						calcResult += `If you get 0 on your remaining assessments, your final grade will be ${achieved}%.<br/>`;
 					}
@@ -544,7 +555,7 @@
 				<div id="analytics">
 					<div id="calcOutput"></div>
 					<div id="desiredGrade">
-						You need to get <span id="markRequired">0</span>% on your remaining assessments in order to get a final grade of <input type="text" id="desiredMark" style="width: 5ch" required maxlength="10" min="0" max="100" value="60" data-value="100" onkeydown="onKeydown(event, this)" oninput="onInput(event, this)"/> .
+						<span id="otherFrontText"></span><span id="frontText">You need to get <span id="markRequired">0</span>% on your remaining assessments in order</span> to get a final grade <span id="desiredQualifier">of</span> <input type="text" id="desiredMark" style="width: 5ch" required maxlength="10" min="0" max="100" value="60" data-value="100" onkeydown="onKeydown(event, this)" oninput="onInput(event, this)"/> .
 					</div>
 				</div>
 			</div>

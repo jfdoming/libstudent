@@ -238,6 +238,9 @@ tr {
 }
 
 @media only screen and (max-width: 770px) {
+	#container {
+		display: initial;
+	}
 	#courseSelectorContainer {
 		flex-direction: column;
 	}
