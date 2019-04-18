@@ -121,10 +121,10 @@
 			};
 			
 			
-			function switchCourse(courseId, doNotSave) {
+			function switchCourse(courseId = null, doNotSave = true, forceRefresh = false) {
 				hideSelector();
 				
-				if (getSelectedKey() == courseId) {
+				if (courseId == null || (getSelectedKey() == courseId && !forceRefresh)) {
 					return;
 				}
 				
@@ -186,6 +186,11 @@
 				window.desiredMark = document.getElementById("desiredMark");
 				window.entries = document.getElementById("entries");
 				window.entryInput = document.querySelector("tbody.no-border");
+				window.exportOutput = document.getElementById("exportOutput");
+				window.exportContainer = document.getElementById("exportContainer");
+				window.importInput = document.getElementById("importInput");
+				window.importContainer = document.getElementById("importContainer");
+				window.importError = document.getElementById("importError");
 				desiredMark.addEventListener("valuechange", updateDesiredGrade);
 				
 				let selectedCourseId = localStorage.getItem("selectedCourseId");
@@ -410,6 +415,7 @@
 					courseDelete.disabled = true;
 				} else {
 					selector.tabIndex = 0;
+					selector.classList.remove("disabled");
 					courseDelete.disabled = false;
 				}
 			}
@@ -515,6 +521,41 @@
 					callback(evt);
 				}
 			}
+			
+			
+			// See https://stackoverflow.com/questions/1173194/select-all-div-text-with-single-mouse-click
+			function selectText(container) {
+				if (document.selection) { // IE
+					var range = document.body.createTextRange();
+					range.moveToElementText(container);
+					range.select();
+				} else if (window.getSelection) {
+					var range = document.createRange();
+					range.selectNode(container);
+					window.getSelection().removeAllRanges();
+					window.getSelection().addRange(range);
+				}
+			}
+			
+			
+			function importData() {
+				try {
+					record = JSON.parse(importInput.value);
+					refreshCourseDisplay(false);
+					importContainer.style.display = "none";
+				} catch (e) {
+					importError.textContent = "An error occurred while importing, and no changes have been made.";
+					importError.style.display = "block";
+				}
+			}
+			
+			function refreshCourseDisplay(doNotSave = true) {
+				const recordKeys = Object.keys(record);
+				if (recordKeys && recordKeys.length > 0) {
+					setSelectedKey(recordKeys[0]);
+				}
+				switchCourse(getSelectedKey(), doNotSave, true);
+			}
 		</script>
 	</head>
 	<body onload="onload()">
@@ -529,6 +570,19 @@
 				<span id="separator">- or -</span>
 				<input type="text" id="courseAdd" required placeholder="e.g. MAT 135..."/>
 				<input type="button" id="courseAddButton" value="Add course" onclick="attemptCourseAdd()"/>
+				<input type="button" id="courseExportButton" value="Export data" onclick="exportOutput.textContent = JSON.stringify(localStorage.primaryRecord); exportContainer.style.display='block';selectText(exportOutput);"/>
+				<input type="button" id="courseImportButton" value="Import data" onclick="importInput.value = ''; importContainer.style.display='block';"/>
+				<div id="exportContainer" class="fullscreen-container">
+					<input type="button" id="exportHideButton" value="Hide" onclick="exportContainer.style.display='none';"/>
+					<div id="exportOutput"></div>
+				</div>
+				<div id="importContainer" class="fullscreen-container">
+					<input type="button" id="importCancelButton" value="Cancel" onclick="importContainer.style.display='none';importError.style.display='none';"/>
+					<input type="button" id="importConfirmButton" value="Confirm import" onclick="importData()"/>
+					<div><strong>Warning:</strong> This will overwrite any data that is currently in the application.</div>
+					<div id="importError" style="display: none;"></div>
+					<textarea id="importInput" oninput="importError.style.display='none';"></textarea>
+				</div>
 			</div>
 			<div id="body-wrapper">
 				<div id="table-container">
