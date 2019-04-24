@@ -148,7 +148,7 @@ tbody > tr:hover {
 	margin-top: 0.5em;
 }
 .fullscreen-container {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
@@ -162,11 +162,14 @@ tbody > tr:hover {
 	margin-left: 1em;
 }
 
-
 #separator {
-	color: #999;
 	margin-left: 2em;
 	margin-right: 1em;
+	color: #999;
+}
+#separator, #courseLabel {
+    cursor: default;
+    user-select: none;
 }
 #body-wrapper {
 	display: flex;

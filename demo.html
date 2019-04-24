@@ -192,28 +192,8 @@
 				window.importContainer = document.getElementById("importContainer");
 				window.importError = document.getElementById("importError");
 				desiredMark.addEventListener("valuechange", updateDesiredGrade);
-				
-				let selectedCourseId = localStorage.getItem("selectedCourseId");
-				
-				let index = 0;
-				for (let courseId in record) {
-					if (index == 0) {
-						if (selectedCourseId == null) {
-							selectedCourseId = courseId;
-						}
-					}
-					
-					setupCourseDisplay(courseId);
-					
-					index++;
-				}
-				
-				setSelectedKey(selectedCourseId);
-				
-				if (index <= 0) {
-					selector.classList.add("disabled");
-					setSelectorLabel("");
-				}
+        
+        refreshCourseSelector();
 				
 				document.addEventListener("click", function(evt) {
 					if (evt.srcElement == courseSelector || isDescendant(courseSelector, evt.srcElement)) {
@@ -240,6 +220,36 @@
 					},
 				});
 			}
+      
+      function refreshCourseSelector(loadFromStorage = true) {
+				let selectedCourseId = loadFromStorage ? localStorage.getItem("selectedCourseId") : null;
+        
+        Array.from(selectorItems.children).forEach(function(el) {
+					el.remove();
+				});
+				
+				let index = 0;
+				for (let courseId in record) {
+					if (index == 0) {
+						if (selectedCourseId == null) {
+							selectedCourseId = courseId;
+						}
+					}
+					
+					setupCourseDisplay(courseId);
+					
+					index++;
+				}
+				
+				setSelectedKey(selectedCourseId);
+				
+				if (index <= 0) {
+					selector.classList.add("disabled");
+					setSelectorLabel("");
+				} else {
+          selector.classList.remove("disabled");
+        }
+      }
 			
 			function onSelectorLabelClicked(evt) {
 				if (selector.classList.contains("disabled")) {
@@ -496,11 +506,13 @@
 					if (earnable == 0) {
 						calcResult += `Your final grade is ${achieved}%.<br/>`;
 						calcResult += `Your GPA for this course is ${determineGPAScore(record, selectedCourseId, uoftGPAScorer).toFixed(1)}.<br/>`;
+            desiredGrade.style.display = "none";
 					} else {
 						calcResult += `You still have the opportunity to earn ${earnable}/100 marks.<br/>`;
 						calcResult += `If you want your mark to stay the same, you should get ${meanSoFar}% on your remaining assessments.<br/>`;
 						calcResult += `If you get 100 on your remaining assessments, your final grade will be ${marksIf100}%.<br/>`;
 						calcResult += `If you get 0 on your remaining assessments, your final grade will be ${achieved}%.<br/>`;
+            desiredGrade.style.display = "initial";
 					}
 					
 					calcOutput.innerHTML = calcResult;
@@ -541,6 +553,7 @@
 			function importData() {
 				try {
 					record = JSON.parse(importInput.value);
+          refreshCourseSelector();
 					refreshCourseDisplay(false);
 					importContainer.style.display = "none";
 				} catch (e) {
@@ -561,7 +574,7 @@
 	<body onload="onload()">
 		<div id="container">
 			<div id="courseSelectorContainer">
-				<span>Choose a course:&nbsp;</span>
+				<span id="courseLabel">Choose a course:&nbsp;&nbsp;</span>
 				<div id="courseSelector" onclick="onSelectorLabelClicked(event)" onkeydown="handleButtonKeydown(event, onSelectorLabelClicked)" tabindex="0">
 					<span id="courseSelectorLabel"></span><span id="courseSelectorArrow"></span>
 					<div id="courseSelectorItems"></div>
@@ -570,7 +583,8 @@
 				<span id="separator">- or -</span>
 				<input type="text" id="courseAdd" required placeholder="e.g. MAT 135..."/>
 				<input type="button" id="courseAddButton" value="Add course" onclick="attemptCourseAdd()"/>
-				<input type="button" id="courseExportButton" value="Export data" onclick="exportOutput.textContent = JSON.stringify(localStorage.primaryRecord); exportContainer.style.display='block';selectText(exportOutput);"/>
+				<span id="separator">- or -</span>
+				<input type="button" id="courseExportButton" value="Export data" onclick="exportOutput.textContent = localStorage.primaryRecord; exportContainer.style.display='block';selectText(exportOutput);"/>
 				<input type="button" id="courseImportButton" value="Import data" onclick="importInput.value = ''; importContainer.style.display='block';"/>
 				<div id="exportContainer" class="fullscreen-container">
 					<input type="button" id="exportHideButton" value="Hide" onclick="exportContainer.style.display='none';"/>
