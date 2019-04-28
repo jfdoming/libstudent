@@ -79,7 +79,7 @@
 				function s4() {
 					return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 				}
-				return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+				return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
 			}
 			
 			function genUniqueCourseId() {
@@ -130,7 +130,7 @@
 				
 				setSelectedKey(courseId);
 				
-				document.querySelectorAll("#markOutput > tbody#entries > *").forEach(function(el) {
+				document.querySelectorAll("#markOutput > tbody#entries > *").forEach((el) => {
 					el.remove();
 				});
 				markOutput.dataset.oldLength = 0;
@@ -191,6 +191,7 @@
 				window.importInput = document.getElementById("importInput");
 				window.importContainer = document.getElementById("importContainer");
 				window.importError = document.getElementById("importError");
+				window.fullscreenShade = document.getElementById("fullscreenShade");
 				desiredMark.addEventListener("valuechange", updateDesiredGrade);
         
         refreshCourseSelector();
@@ -282,7 +283,7 @@
 					el.selectionEnd = oldSelEnd;
 					el.value = Math.max(el.min, Math.min(el.max, Math.round(el.value) + change));
 					
-					var event = new Event('valuechange');
+					var event = new Event("valuechange");
 					el.dispatchEvent(event);
 					
 					evt.preventDefault();
@@ -312,7 +313,7 @@
 						el.value = oldValue;
 					}
 					
-					var event = new Event('valuechange');
+					var event = new Event("valuechange");
 					el.dispatchEvent(event);
 					
 					el.selectionStart = oldSelSt - 1;
@@ -322,7 +323,7 @@
 				
 				el.dataset.value = el.value;
 					
-				var event = new Event('valuechange');
+				var event = new Event("valuechange");
 				el.dispatchEvent(event);
 				return true;
 			}
@@ -549,7 +550,42 @@
 				}
 			}
 			
+      
+      function showModal(c) {
+        document.body.style.overflow = "hidden";
+        fullscreenShade.style.display = "block";
+        c.style.display = "block";
+      }
+      
+      function hideModal(c) {
+        c.style.display = "none";
+        fullscreenShade.style.display = "none";
+        document.body.style.overflow = "initial";
+      }
 			
+      function showExportModal() {
+        exportOutput.textContent = localStorage.primaryRecord;
+        showModal(exportContainer);
+        selectText(exportOutput);
+      }
+      
+      function hideExportModal() {
+        hideModal(exportContainer);
+      }
+      
+      function showImportModal() {
+        importInput.value = "";
+        showModal(importContainer);
+        importInput.style.height = "";
+        importInput.style.height = (importInput.scrollHeight + 3) + "px";
+        importInput.focus();
+      }
+      
+      function hideImportModal() {
+        hideModal(importContainer);
+        importError.style.display = "none";
+      }
+      
 			function importData() {
 				try {
 					record = JSON.parse(importInput.value);
@@ -559,6 +595,7 @@
 				} catch (e) {
 					importError.textContent = "An error occurred while importing, and no changes have been made.";
 					importError.style.display = "block";
+          importInput.focus();
 				}
 			}
 			
@@ -584,19 +621,20 @@
 				<input type="text" id="courseAdd" required placeholder="e.g. MAT 135..."/>
 				<input type="button" id="courseAddButton" value="Add course" onclick="attemptCourseAdd()"/>
 				<span id="separator">- or -</span>
-				<input type="button" id="courseExportButton" value="Export data" onclick="exportOutput.textContent = localStorage.primaryRecord; exportContainer.style.display='block';selectText(exportOutput);"/>
-				<input type="button" id="courseImportButton" value="Import data" onclick="importInput.value = ''; importContainer.style.display='block';"/>
+				<input type="button" id="courseExportButton" value="Export data" onclick="showExportModal()"/>
+				<input type="button" id="courseImportButton" value="Import data" onclick="showImportModal()"/>
 				<div id="exportContainer" class="fullscreen-container">
-					<input type="button" id="exportHideButton" value="Hide" onclick="exportContainer.style.display='none';"/>
+					<input type="button" id="exportHideButton" value="Hide" onclick="hideExportModal()"/>
 					<div id="exportOutput"></div>
 				</div>
 				<div id="importContainer" class="fullscreen-container">
-					<input type="button" id="importCancelButton" value="Cancel" onclick="importContainer.style.display='none';importError.style.display='none';"/>
-					<input type="button" id="importConfirmButton" value="Confirm import" onclick="importData()"/>
 					<div><strong>Warning:</strong> This will overwrite any data that is currently in the application.</div>
+					<textarea id="importInput" rows="1" oninput="importError.style.display='none';this.style.height = '';this.style.height = (this.scrollHeight + 3) + 'px';" spellcheck="false"></textarea>
 					<div id="importError" style="display: none;"></div>
-					<textarea id="importInput" oninput="importError.style.display='none';"></textarea>
+					<input type="button" id="importCancelButton" value="Cancel" onclick="hideImportModal()"/>
+					<input type="button" id="importConfirmButton" value="Confirm import" onclick="importData()"/>
 				</div>
+        <div id="fullscreenShade"></div>
 			</div>
 			<div id="body-wrapper">
 				<div id="table-container">
