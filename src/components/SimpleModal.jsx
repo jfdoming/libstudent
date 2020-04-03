@@ -70,6 +70,8 @@ const modalStyles = {
     margin: "auto",
     boxShadow: "0px 0px 40px 0px rgba(0, 0, 0, 0.40)",
     padding: "1.5em",
+    maxHeight: "75vh",
+    overflowY: "auto",
   },
 };
 

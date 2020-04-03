@@ -4,6 +4,17 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
+toast.configure({
+  draggable: false,
+  position: toast.POSITION.BOTTOM_LEFT,
+  closeButton: false,
+  pauseOnHover: false,
+  autoClose: 3000,
+});
+
 ReactDOM.render(
   <React.StrictMode>
     <App />

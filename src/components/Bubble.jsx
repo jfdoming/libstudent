@@ -4,7 +4,7 @@ import { createUseStyles } from "react-jss";
 const useStyles = createUseStyles({
   bubble: {
     display: "flex",
-    flexDirection: "row",
+    flexDirection: (row) => (row ? "row" : "column"),
     alignItems: "center",
 
     borderRadius: 10,
@@ -17,8 +17,8 @@ const useStyles = createUseStyles({
   },
 });
 
-const Bubble = ({ children, className = "", ...props }) => {
-  const classes = useStyles();
+const Bubble = ({ children, className = "", direction = "row", ...props }) => {
+  const classes = useStyles(direction === "row");
   return (
     <div className={`${classes.bubble} ${className}`} {...props}>
       {children}

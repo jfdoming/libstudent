@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import { createUseStyles } from "react-jss";
 
 import Button from "./components/Button";
@@ -33,7 +33,9 @@ import {
   setCurrentGradingScheme,
 } from "./store/courseActions";
 import Bubble from "./components/Bubble";
+import Input from "./components/Input";
 import Heap from "./utils/Heap";
+import { toast } from "react-toastify";
 
 const useStyles = createUseStyles({
   app: {
@@ -51,19 +53,22 @@ const useStyles = createUseStyles({
 
 const persist = (state) => () => {
   localStorage.setItem("appState", JSON.stringify(state));
+  toast.success("Successfully saved.");
 };
 
 const Divider = () => (
   <div style={{ flexBasis: "100%", marginBottom: "1em" }} />
 );
 
-const sumAssessment = (assessment, dropWorst) => {
+const sumAssessment = (assessment, dropWorst, missingScore = null) => {
   const markHeap = new Heap(
-    assessment.entries.map(({ score, max }) => ({
-      score,
-      max,
-      percentage: +score / +max,
-    })),
+    assessment.entries
+      .filter(({ max }) => missingScore !== null || +max)
+      .map(({ score, max }) => ({
+        score,
+        max,
+        percentage: +max ? +score / +max : missingScore,
+      })),
     "percentage"
   );
   for (let i = 0; i < dropWorst; ++i) {
@@ -72,7 +77,7 @@ const sumAssessment = (assessment, dropWorst) => {
 
   const remaining = markHeap.getAll();
   const totalScore = remaining.reduce(
-    (rror, { score, max }) => rror + +score / +max,
+    (rror, { percentage }) => rror + percentage,
     0
   );
   return {
@@ -81,21 +86,65 @@ const sumAssessment = (assessment, dropWorst) => {
   };
 };
 
-const Analytics = ({ assessments = [], gradingSchemeEntries = [] }) => {
-  const { score, max } = gradingSchemeEntries.reduce(
+const calculateTotals = (
+  missingScore,
+  assessments = [],
+  gradingSchemeEntries = []
+) => {
+  const { score, max, bonusScore, bonusMax } = gradingSchemeEntries.reduce(
     (rror, { name, weight, dropWorst, bonus }) => {
-      const { count, score } = sumAssessment(assessments[name], dropWorst);
-      if (count === 0) {
-        return rror;
-      }
+      const { count, score } = sumAssessment(
+        assessments[name],
+        dropWorst,
+        missingScore
+      );
+      const isBonus = "" + bonus === "true";
+      const shouldCount = count !== 0;
       return {
-        score: rror.score + +weight * score,
-        max: rror.max + +weight * ("" + bonus === "false"),
+        score:
+          rror.score +
+          +weight * !isBonus * (shouldCount ? score : missingScore || 0),
+        max:
+          rror.max +
+          +weight * !isBonus * (shouldCount || missingScore !== null),
+        bonusScore: rror.bonusScore + +weight * isBonus * score,
+        bonusMax: rror.bonusMax + +weight * !isBonus,
       };
     },
-    { score: 0, max: 0 }
+    { score: 0, max: 0, bonusScore: 0, bonusMax: 0 }
   );
-  return (max ? ((score / max) * 100).toFixed(2) : "??.??") + "%";
+  return (
+    (max ? ((score / max + bonusScore / bonusMax) * 100).toFixed(2) : "??.??") +
+    "%"
+  );
+};
+
+const Analytics = ({ assessments, gradingSchemeEntries }) => {
+  const percentCurrent = calculateTotals(
+    null,
+    assessments,
+    gradingSchemeEntries
+  );
+
+  const [target, setTarget] = useState(100);
+  return (
+    <Bubble direction="column">
+      If you want your mark to stay the same, you should get an average of{" "}
+      {percentCurrent} on your remaining assessments.
+      <br />
+      <span>
+        If you get an average of{" "}
+        <Input
+          type="number"
+          variant="extraSmall"
+          value={target}
+          onChange={(e) => setTarget(e.target.value)}
+        />{" "}
+        , your final grade will be{" "}
+        {calculateTotals(target / 100, assessments, gradingSchemeEntries)}.
+      </span>
+    </Bubble>
+  );
 };
 
 const App = () => {
@@ -113,7 +162,7 @@ const App = () => {
 
   return (
     <div className={classes.app}>
-      <Button text="Persist" onClick={persist(state)} />
+      <Button text="Save" onClick={persist(state)} />
       <SimpleModal
         trigger={assessmentModal}
         variant="small"
@@ -170,12 +219,10 @@ const App = () => {
         placeholder="e.g. Scheme A"
       />
       <Divider />
-      <Bubble>
-        <Analytics
-          assessments={getAssessments(state)}
-          gradingSchemeEntries={getCurrentGradingSchemeEntries(state)}
-        />
-      </Bubble>
+      <Analytics
+        assessments={getAssessments(state)}
+        gradingSchemeEntries={getCurrentGradingSchemeEntries(state)}
+      />
     </div>
   );
 };

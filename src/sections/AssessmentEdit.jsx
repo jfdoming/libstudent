@@ -6,7 +6,8 @@ import EntryEdit from "./EntryEdit";
 const number = (fn) => (e) =>
   fn({ ...e, target: { ...e.target, value: +e.target.value } });
 
-const percent = (score, max) => ((score / max) * 100).toFixed(2) + "%";
+const percent = (score, max) =>
+  `${max ? ((score / max) * 100).toFixed(2) : "??.??"}%`;
 
 const initialNewEntry = (id) => ({
   id,

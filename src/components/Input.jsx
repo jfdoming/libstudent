@@ -3,6 +3,7 @@ import { createUseStyles } from "react-jss";
 
 const useStyles = createUseStyles({
   input: {
+    display: "inline",
     border: (props) =>
       props.borderless ? "1px solid transparent" : "1px solid #CCCCCC",
     background: (props) => (props.borderless ? "transparent" : "white"),
@@ -24,6 +25,9 @@ const useStyles = createUseStyles({
       background: "white",
     },
   },
+  extraSmall: {
+    width: "7.5ch",
+  },
   small: {
     width: "10ch",
   },
@@ -33,7 +37,7 @@ const useStyles = createUseStyles({
 });
 
 const Input = ({
-  variant = "small",
+  variant = "extraSmall",
   borderless = false,
   noDrag = true,
   initialValue,
@@ -41,10 +45,7 @@ const Input = ({
   ...props
 }) => {
   const classes = useStyles({ borderless });
-  let realClassName = classes.input;
-  if (variant === "small") realClassName += " " + classes.small;
-  if (variant === "large") realClassName += " " + classes.large;
-  realClassName += " " + className;
+  let realClassName = classes.input + " " + classes[variant] + " " + className;
 
   const [value, setValue] = useState(initialValue);
 
