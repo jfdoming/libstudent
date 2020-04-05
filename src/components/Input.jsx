@@ -37,17 +37,19 @@ const useStyles = createUseStyles({
 });
 
 const Input = ({
+  type,
   variant = "extraSmall",
   borderless = false,
   noDrag = true,
   initialValue,
   className = "",
+  value,
   ...props
 }) => {
   const classes = useStyles({ borderless });
   let realClassName = classes.input + " " + classes[variant] + " " + className;
 
-  const [value, setValue] = useState(initialValue);
+  const [internalValue, setValue] = useState(initialValue);
 
   const inputRef = useRef();
 
@@ -61,12 +63,18 @@ const Input = ({
     );
   });
 
+  const trueValue = typeof value !== "undefined" ? value : internalValue;
+
   return (
     <input
+      type={type}
       ref={inputRef}
       className={realClassName}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
+      value={trueValue}
+      checked={type === "checkbox" ? "" + trueValue === "true" : undefined}
+      onChange={(e) =>
+        setValue(type === "checkbox" ? e.target.checked : e.target.value)
+      }
       {...props}
     />
   );

@@ -39,7 +39,7 @@ const SchemeEdit = ({ assessments, schemes, setSchemes }) => {
       key="bonus"
       type="checkbox"
       value={newEntry.bonus}
-      onChange={setInNewEntry("bonus")}
+      onChange={setInNewEntry("bonus", "checked")}
     />,
     <Button key="add" text="Add" disabled={!schemes} />,
   ];

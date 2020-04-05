@@ -10,8 +10,8 @@ const EntryEdit = ({
 }) => {
   const [id, setId] = useState(entries ? entries.length : -1);
   const [newEntry, setNewEntry] = useState(initialNewEntry(id));
-  const setInNewEntry = (key) => (e) => {
-    const value = e.target.value;
+  const setInNewEntry = (key, eventKey = "value") => (e) => {
+    const value = e.target[eventKey];
     setNewEntry((entry) => ({ ...entry, [key]: value }));
   };
 

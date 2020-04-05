@@ -194,7 +194,8 @@ const SortableTable = ({
               data={validEntries(item)}
               dataEditable
               onDataChange={(key) => (e) => {
-                const value = e.target.value;
+                const value =
+                  "checked" in e.target ? e.target.checked : e.target.value;
                 return setData((oldData) => {
                   const newData = [...oldData];
                   newData[index][key] = value;

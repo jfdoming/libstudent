@@ -89,9 +89,10 @@ const sumAssessment = (assessment, dropWorst, missingScore = null) => {
 const calculateTotals = (
   missingScore,
   assessments = [],
-  gradingSchemeEntries = []
+  gradingSchemeEntries = [],
+  format
 ) => {
-  const { score, max, bonusScore, bonusMax } = gradingSchemeEntries.reduce(
+  const result = gradingSchemeEntries.reduce(
     (rror, { name, weight, dropWorst, bonus }) => {
       const { count, score } = sumAssessment(
         assessments[name],
@@ -113,25 +114,49 @@ const calculateTotals = (
     },
     { score: 0, max: 0, bonusScore: 0, bonusMax: 0 }
   );
-  return (
-    (max ? ((score / max + bonusScore / bonusMax) * 100).toFixed(2) : "??.??") +
-    "%"
-  );
+  return format(result) + "%";
 };
 
+const calculateExpected = (
+  missingScore,
+  assessments = [],
+  gradingSchemeEntries = []
+) =>
+  calculateTotals(
+    missingScore,
+    assessments,
+    gradingSchemeEntries,
+    ({ score, max, bonusScore, bonusMax }) =>
+      max ? ((score / max + bonusScore / bonusMax) * 100).toFixed(2) : "??.??"
+  );
+
+const calculateDesired = (target, assessments, gradingSchemeEntries) =>
+  calculateTotals(
+    null,
+    assessments,
+    gradingSchemeEntries,
+    ({ score, max, bonusScore, bonusMax }) =>
+      (
+        (max && bonusMax !== max
+          ? (target * bonusMax - score - bonusScore) / (bonusMax - max)
+          : target) * 100
+      ).toFixed(2)
+  );
+
 const Analytics = ({ assessments, gradingSchemeEntries }) => {
-  const percentCurrent = calculateTotals(
+  const percentCurrent = calculateExpected(
     null,
     assessments,
     gradingSchemeEntries
   );
 
   const [target, setTarget] = useState(100);
+  const [goal, setGoal] = useState(60);
+
   return (
     <Bubble direction="column">
       If you want your mark to stay the same, you should get an average of{" "}
       {percentCurrent} on your remaining assessments.
-      <br />
       <span>
         If you get an average of{" "}
         <Input
@@ -140,8 +165,20 @@ const Analytics = ({ assessments, gradingSchemeEntries }) => {
           value={target}
           onChange={(e) => setTarget(e.target.value)}
         />{" "}
-        , your final grade will be{" "}
-        {calculateTotals(target / 100, assessments, gradingSchemeEntries)}.
+        on your remaining assessments, your final grade will be{" "}
+        {calculateExpected(target / 100, assessments, gradingSchemeEntries)}.
+      </span>
+      <span>
+        If you want your final grade to be{" "}
+        <Input
+          type="number"
+          variant="extraSmall"
+          value={goal}
+          onChange={(e) => setGoal(e.target.value)}
+        />{" "}
+        , you need to get an average of{" "}
+        {calculateDesired(goal / 100, assessments, gradingSchemeEntries)} on
+        your remaining assessments.
       </span>
     </Bubble>
   );
