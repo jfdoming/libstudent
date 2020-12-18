@@ -58,7 +58,7 @@ const SchemeEdit = ({ assessments, schemes, setSchemes }) => {
         ),
         weight: (props) => <Input type="number" borderless {...props} />,
         dropWorst: (props) => (
-          <Input type="number" borderless {...props} />
+          <Input type="number" min={0} borderless {...props} />
         ),
         bonus: (props) => <Input type="checkbox" borderless {...props} />,
       }}
