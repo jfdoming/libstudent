@@ -86,9 +86,9 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
   const gainingFocus = useRef(false);
 
   const handleChange = (e) => {
-    const value = e.target.value;
-    setValue(value);
-
+    if (setValue) {
+      setValue(e.target.value);
+    }
     if (onChange) {
       onChange(e);
     }
