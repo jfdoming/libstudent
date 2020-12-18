@@ -143,6 +143,19 @@ const calculateDesired = (target, assessments, gradingSchemeEntries) =>
       ).toFixed(2)
   );
 
+const AnalyticsEntry = ({ children }) => (
+  <span
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      height: "2rem",
+    }}
+  >
+    <span>{children}</span>
+  </span>
+);
+
 const Analytics = ({ assessments, gradingSchemeEntries }) => {
   const percentCurrent = calculateExpected(
     null,
@@ -154,10 +167,12 @@ const Analytics = ({ assessments, gradingSchemeEntries }) => {
   const [goal, setGoal] = useState(60);
 
   return (
-    <Bubble direction="column">
-      If you want your mark to stay the same, you should get an average of{" "}
-      {percentCurrent} on your remaining assessments.
-      <span>
+    <Bubble direction="column" center={false}>
+      <AnalyticsEntry>
+        If you want your mark to stay the same, you should get an average of{" "}
+        {percentCurrent} on your remaining assessments.
+      </AnalyticsEntry>
+      <AnalyticsEntry>
         If you get an average of{" "}
         <Input
           type="number"
@@ -167,8 +182,8 @@ const Analytics = ({ assessments, gradingSchemeEntries }) => {
         />{" "}
         on your remaining assessments, your final grade will be{" "}
         {calculateExpected(target / 100, assessments, gradingSchemeEntries)}.
-      </span>
-      <span>
+      </AnalyticsEntry>
+      <AnalyticsEntry>
         If you want your final grade to be{" "}
         <Input
           type="number"
@@ -179,7 +194,7 @@ const Analytics = ({ assessments, gradingSchemeEntries }) => {
         , you need to get an average of{" "}
         {calculateDesired(goal / 100, assessments, gradingSchemeEntries)} on
         your remaining assessments.
-      </span>
+      </AnalyticsEntry>
     </Bubble>
   );
 };
