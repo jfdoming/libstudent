@@ -26,7 +26,6 @@ const AssessmentEdit = ({ assessments, setAssessments }) => {
     <Input
       key="score"
       type="number"
-      step="any"
       value={newEntry.score}
       onChange={setInNewEntry("score")}
       required
@@ -34,7 +33,6 @@ const AssessmentEdit = ({ assessments, setAssessments }) => {
     <Input
       key="max"
       type="number"
-      step="any"
       min={0}
       value={newEntry.max}
       onChange={setInNewEntry("max")}
@@ -57,12 +55,8 @@ const AssessmentEdit = ({ assessments, setAssessments }) => {
         name: (props) => (
           <Input type="text" variant="large" borderless {...props} />
         ),
-        score: (props) => (
-          <Input type="number" step="any" borderless {...props} />
-        ),
-        max: (props) => (
-          <Input type="number" step="any" min={0} borderless {...props} />
-        ),
+        score: (props) => <Input type="number" borderless {...props} />,
+        max: (props) => <Input type="number" min={0} borderless {...props} />,
         percentage: (props, { score, max }) => percent(score, max),
       }}
       entries={assessments}

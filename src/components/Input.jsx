@@ -90,6 +90,7 @@ const Input = ({
       className={realClassName}
       value={trueValue}
       checked={type === "checkbox" ? "" + trueValue === "true" : undefined}
+      step={type === "number" ? "any" : undefined}
       onChange={handleChange}
       {...props}
     />
