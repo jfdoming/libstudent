@@ -84,6 +84,7 @@ const SimpleModal = ({
   confirmText = "Yes",
   cancelText = "No",
   variant = "default",
+  easyExitAllowed = true,
 }) => {
   const classes = useStyles();
 
@@ -109,6 +110,7 @@ const SimpleModal = ({
       isOpen={open}
       contentLabel={title}
       closeTimeoutMS={FADE_OUT_TIME}
+      onRequestClose={easyExitAllowed ? handleCancel : undefined}
     >
       <h2 className={classes.modalTitle}>{title}</h2>
       <div

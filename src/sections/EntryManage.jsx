@@ -35,6 +35,7 @@ const EntryManage = ({
         trigger={deleteEntryModal}
         title={`Delete this ${name}?`}
         onConfirm={deleteCurrentEntry}
+        easyExitAllowed={false}
       >
         Are you sure you want to delete this {name}? This cannot be undone.
       </SimpleModal>
