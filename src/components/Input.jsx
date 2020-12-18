@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createUseStyles } from "react-jss";
+import { number, string } from "../utils/passthrough";
 
 const useStyles = createUseStyles({
   input: {
@@ -44,6 +45,8 @@ const Input = ({
   initialValue,
   className = "",
   value,
+  parse,
+  onChange,
   ...props
 }) => {
   const classes = useStyles({ borderless });
@@ -64,6 +67,21 @@ const Input = ({
   });
 
   const trueValue = typeof value !== "undefined" ? value : internalValue;
+  const handleChange = useMemo(() => {
+    if (onChange) {
+      if (parse) {
+        return parse(onChange);
+      }
+      if (type === "number") {
+        return number(onChange);
+      }
+      if (type === "text") {
+        return string(onChange);
+      }
+    }
+    return (e) =>
+      setValue(type === "checkbox" ? e.target.checked : e.target.value);
+  }, [type, onChange, parse]);
 
   return (
     <input
@@ -72,9 +90,7 @@ const Input = ({
       className={realClassName}
       value={trueValue}
       checked={type === "checkbox" ? "" + trueValue === "true" : undefined}
-      onChange={(e) =>
-        setValue(type === "checkbox" ? e.target.checked : e.target.value)
-      }
+      onChange={handleChange}
       {...props}
     />
   );

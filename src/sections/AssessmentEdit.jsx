@@ -3,9 +3,6 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import EntryEdit from "./EntryEdit";
 
-const number = (fn) => (e) =>
-  fn({ ...e, target: { ...e.target, value: +e.target.value } });
-
 const percent = (score, max) =>
   `${+max ? ((score / max) * 100).toFixed(2) : "??.??"}%`;
 
@@ -59,23 +56,11 @@ const AssessmentEdit = ({ assessments, setAssessments }) => {
         name: (props) => (
           <Input type="text" variant="large" borderless {...props} />
         ),
-        score: ({ onChange, ...props }) => (
-          <Input
-            type="number"
-            step="any"
-            borderless
-            onChange={number(onChange)}
-            {...props}
-          />
+        score: (props) => (
+          <Input type="number" step="any" borderless {...props} />
         ),
-        max: ({ onChange, ...props }) => (
-          <Input
-            type="number"
-            step="any"
-            borderless
-            onChange={number(onChange)}
-            {...props}
-          />
+        max: (props) => (
+          <Input type="number" step="any" borderless {...props} />
         ),
         percentage: (props, { score, max }) => percent(score, max),
       }}

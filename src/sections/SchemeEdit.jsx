@@ -53,11 +53,13 @@ const SchemeEdit = ({ assessments, schemes, setSchemes }) => {
           <Dropdown
             options={assessments?.map(({ name }) => name) || []}
             value={value}
-            setValue={(value) => onChange({ target: { value } })}
+            onChange={onChange}
           />
         ),
         weight: (props) => <Input type="number" borderless {...props} />,
-        dropWorst: (props) => <Input type="number" borderless {...props} />,
+        dropWorst: (props) => (
+          <Input type="number" borderless {...props} />
+        ),
         bonus: (props) => <Input type="checkbox" borderless {...props} />,
       }}
       entries={schemes}
