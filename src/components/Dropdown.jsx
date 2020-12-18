@@ -103,13 +103,22 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
       gainingFocus.current = false;
     }
   };
+
+  const handleItemClick = (option) => () => {
+    handleChange({ target: { value: option } });
+
+    if (inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+  };
+
   const handleKeyDown = (i) => (e) => {
     const length = options.length + 1;
     const hasMoreBefore = i > 0;
     const hasMoreAfter = i < length - 1;
 
     if (!e.ctrlKey && !e.altKey && !e.metaKey) {
-      if (e.keyCode === 9) {
+      if (e.keyCode === 9 && open) {
         if (hasMoreAfter && !e.shiftKey) {
           gainingFocus.current = true;
           inputRefs.current[i + 1].focus();
@@ -121,15 +130,25 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
         }
       } else if (!e.shiftKey) {
         if (e.keyCode === 40) {
-          gainingFocus.current = true;
-          inputRefs.current[(i + 1) % (options.length + 1)].focus();
-          e.preventDefault();
+          if (open) {
+            gainingFocus.current = true;
+            inputRefs.current[(i + 1) % (options.length + 1)].focus();
+            e.preventDefault();
+          } else {
+            e.preventDefault();
+            handleItemClick((i + 1) % options.length)();
+          }
         } else if (e.keyCode === 38) {
-          gainingFocus.current = true;
-          inputRefs.current[
-            (i + options.length) % (options.length + 1)
-          ].focus();
-          e.preventDefault();
+          if (open) {
+            gainingFocus.current = true;
+            inputRefs.current[
+              (i + options.length) % (options.length + 1)
+            ].focus();
+            e.preventDefault();
+          } else {
+            e.preventDefault();
+            handleItemClick((i + options.length - 1) % options.length)();
+          }
         } else if (e.keyCode === 27) {
           if (i === 0) {
             inputRefs.current[i].blur();
@@ -140,14 +159,6 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
           e.preventDefault();
         }
       }
-    }
-  };
-
-  const handleItemClick = (option) => () => {
-    handleChange({ target: { value: option } });
-
-    if (inputRefs.current[0]) {
-      inputRefs.current[0].focus();
     }
   };
 
@@ -162,7 +173,7 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
         }}
         onClick={() => setOpen((oldOpen) => !oldOpen)}
         onBlur={handleBlur}
-        onKeyDown={handleKeyDown(0)}
+        onKeyDown={handleKeyDown(value)}
         onKeyPress={(e) => {
           if (
             (e.which === 13 || e.which === 32) &&
@@ -190,6 +201,7 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
                 inputRefs.current[index + 1] = ref;
                 return true;
               }}
+              aria-hidden={open ? "false" : true}
               tabIndex={open ? 0 : -1}
               className={classes.item}
               onMouseDown={() => (gainingFocus.current = true)}
