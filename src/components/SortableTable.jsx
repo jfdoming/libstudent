@@ -88,7 +88,8 @@ const TableRow = ({
   classes,
   className = "",
   childClassName = "",
-  data = [],
+  keys = [],
+  data = {},
   dataEditable = false,
   render = {},
   onDataChange,
@@ -104,7 +105,7 @@ const TableRow = ({
   const renderCell = (index, key, tdChildren) => {
     let className = `${childClassName} ${classes.td}`;
     if (index === 0) className += " " + classes.tdFirst;
-    if (index === data.length + children.length - 1)
+    if (index === keys.length + children.length - 1)
       className += " " + classes.tdLast;
 
     return (
@@ -114,23 +115,24 @@ const TableRow = ({
     );
   };
 
-  const collectedData = Object.fromEntries(data);
-
   return (
     <tr className={`${classes.tr} ${className}`} {...props}>
-      {data.map(([key, value], index) => {
+      {keys.map((key, index) => {
         const renderFunc = render[key] || (({ value }) => value);
         return renderCell(
           index,
           key,
           dataEditable
-            ? renderFunc({ value, onChange: onDataChange(key) }, collectedData)
-            : renderFunc({ value, onChange: noop }, collectedData)
+            ? renderFunc(
+                { value: data[key] ?? key, onChange: onDataChange(key) },
+                data
+              )
+            : renderFunc({ value: data[key] ?? key, onChange: noop }, data)
         );
       })}
       {children && children.length
         ? children.map((child, index) =>
-            renderCell(index + data.length, index, child)
+            renderCell(index + keys.length, index, child)
           )
         : null}
     </tr>
@@ -147,18 +149,6 @@ const SortableTable = ({
 }) => {
   const classes = useStyles();
 
-  const validEntries = (item) => {
-    if (!keys || !keys.includes) {
-      return Object.entries(item);
-    }
-    const entries = Object.entries(item).filter(([key]) => keys.includes(key));
-    const itemKeys = Object.keys(item);
-    const entriesToAdd = keys
-      .filter((key) => !itemKeys.includes(key))
-      .map((key) => [key, ""]);
-    return [...entries, ...entriesToAdd];
-  };
-
   return (
     <div className={classes.tableContainer}>
       <table className={classes.table}>
@@ -167,7 +157,7 @@ const SortableTable = ({
             classes={classes}
             className={classes.th}
             childClassName={classes.thChild}
-            data={[...header.map((entry) => [entry, entry]), ["x", ""]]}
+            keys={[...header, ""]}
           />
           <TableRow
             classes={classes}
@@ -191,7 +181,8 @@ const SortableTable = ({
               childClassName={
                 index === data.length - 1 ? classes.trLastChild : ""
               }
-              data={validEntries(item)}
+              keys={keys}
+              data={item}
               dataEditable
               onDataChange={(key) => (e) => {
                 const value =
