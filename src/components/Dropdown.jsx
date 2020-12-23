@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import { createUseStyles } from "react-jss";
 
 const useStyles = createUseStyles({
@@ -112,55 +112,72 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
     }
   };
 
-  const handleKeyDown = (i) => (e) => {
-    const length = options.length + 1;
-    const hasMoreBefore = i > 0;
-    const hasMoreAfter = i < length - 1;
+  const handleKeyDown = (i, id, entries, indices) => {
+    const idIndex = indices[+id] ?? 0;
+    const nextOptionID = entries.length
+      ? +entries[(idIndex + 1) % entries.length][0]
+      : 0;
+    const prevOptionID = entries.length
+      ? +entries[(idIndex + entries.length - 1) % entries.length][0]
+      : 0;
+    return (e) => {
+      const length = options.length + 1;
+      const hasMoreBefore = i > 0;
+      const hasMoreAfter = i < length - 1;
 
-    if (!e.ctrlKey && !e.altKey && !e.metaKey) {
-      if (e.keyCode === 9 && open) {
-        if (hasMoreAfter && !e.shiftKey) {
-          gainingFocus.current = true;
-          inputRefs.current[i + 1].focus();
-          e.preventDefault();
-        } else if (hasMoreBefore && e.shiftKey) {
-          gainingFocus.current = true;
-          inputRefs.current[i - 1].focus();
-          e.preventDefault();
-        }
-      } else if (!e.shiftKey) {
-        if (e.keyCode === 40) {
-          if (open) {
+      if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+        if (e.keyCode === 9 && open) {
+          if (hasMoreAfter && !e.shiftKey) {
             gainingFocus.current = true;
-            inputRefs.current[(i + 1) % (options.length + 1)].focus();
+            inputRefs.current[i + 1].focus();
             e.preventDefault();
-          } else {
-            e.preventDefault();
-            handleItemClick((i + 1) % options.length)();
-          }
-        } else if (e.keyCode === 38) {
-          if (open) {
+          } else if (hasMoreBefore && e.shiftKey) {
             gainingFocus.current = true;
-            inputRefs.current[
-              (i + options.length) % (options.length + 1)
-            ].focus();
+            inputRefs.current[i - 1].focus();
             e.preventDefault();
-          } else {
+          }
+        } else if (!e.shiftKey) {
+          if (e.keyCode === 40) {
+            if (open) {
+              gainingFocus.current = true;
+              inputRefs.current[(i + 1) % (options.length + 1)].focus();
+              e.preventDefault();
+            } else {
+              e.preventDefault();
+              handleItemClick(nextOptionID)();
+            }
+          } else if (e.keyCode === 38) {
+            if (open) {
+              gainingFocus.current = true;
+              inputRefs.current[
+                (i + options.length) % (options.length + 1)
+              ].focus();
+              e.preventDefault();
+            } else {
+              e.preventDefault();
+              handleItemClick(prevOptionID)();
+            }
+          } else if (e.keyCode === 27) {
+            if (i === 0) {
+              inputRefs.current[i].blur();
+            } else {
+              inputRefs.current[0].focus();
+              setOpen(false);
+            }
             e.preventDefault();
-            handleItemClick((i + options.length - 1) % options.length)();
           }
-        } else if (e.keyCode === 27) {
-          if (i === 0) {
-            inputRefs.current[i].blur();
-          } else {
-            inputRefs.current[0].focus();
-            setOpen(false);
-          }
-          e.preventDefault();
         }
       }
-    }
+    };
   };
+
+  const [optionEntries, optionIndices] = useMemo(() => {
+    const entries = Object.entries(options);
+    return [
+      entries,
+      Object.fromEntries(entries.map(([id, ...rest], index) => [+id, index])),
+    ];
+  }, [options]);
 
   return (
     <div className={classes.dropdownContainer}>
@@ -173,7 +190,7 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
         }}
         onClick={() => setOpen((oldOpen) => !oldOpen)}
         onBlur={handleBlur}
-        onKeyDown={handleKeyDown(value)}
+        onKeyDown={handleKeyDown(0, value, optionEntries, optionIndices)}
         onKeyPress={(e) => {
           if (
             (e.which === 13 || e.which === 32) &&
@@ -194,18 +211,23 @@ const Dropdown = ({ options, value, setValue, onChange }) => {
       </div>
       {
         <div className={(open ? classes.openItems + " " : "") + classes.items}>
-          {Object.entries(options).map(([id, option], index) => (
+          {optionEntries.map(([id, option], index) => (
             <div
               key={id}
               ref={(ref) => {
                 inputRefs.current[index + 1] = ref;
                 return true;
               }}
-              aria-hidden={open ? "false" : true}
+              aria-hidden={open ? "false" : "true"}
               tabIndex={open ? 0 : -1}
               className={classes.item}
               onMouseDown={() => (gainingFocus.current = true)}
-              onKeyDown={handleKeyDown(index + 1)}
+              onKeyDown={handleKeyDown(
+                index + 1,
+                value,
+                optionEntries,
+                optionIndices
+              )}
               onKeyPress={(e) => {
                 if (
                   (e.which === 13 || e.which === 32) &&
